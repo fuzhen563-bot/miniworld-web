@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>迷你世界 · 网页版</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%236cbf3f'/><rect y='55' width='100' height='45' fill='%238a5c2f'/></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="vignette"></div>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hidden">
+  <div id="crosshair"></div>
+
+  <div id="hearts">
+    <span class="hb"></span><span class="hb"></span><span class="hb"></span><span class="hb"></span><span class="hb"></span>
+    <span class="hb"></span><span class="hb"></span><span class="hb"></span><span class="hb"></span><span class="hb"></span>
+  </div>
+  <div id="food">
+    <span>🍗</span><span>🍗</span><span>🍗</span><span>🍗</span><span>🍗</span>
+    <span>🍗</span><span>🍗</span><span>🍗</span><span>🍗</span><span>🍗</span>
+  </div>
+
+  <div id="hotbar-wrap">
+    <div id="hotbar">
+      <div class="hslot" data-i="0"><div class="it"></div><div class="cnt"></div></div>
+      <div class="hslot" data-i="1"><div class="it"></div><div class="cnt"></div></div>
+      <div class="hslot" data-i="2"><div class="it"></div><div class="cnt"></div></div>
+      <div class="hslot" data-i="3"><div class="it"></div><div class="cnt"></div></div>
+      <div class="hslot" data-i="4"><div class="it"></div><div class="cnt"></div></div>
+      <div class="hslot" data-i="5"><div class="it"></div><div class="cnt"></div></div>
+      <div class="hslot" data-i="6"><div class="it"></div><div class="cnt"></div></div>
+      <div class="hslot" data-i="7"><div class="it"></div><div class="cnt"></div></div>
+      <div class="hslot" data-i="8"><div class="it"></div><div class="cnt"></div></div>
+    </div>
+    <div id="mode-label">生存模式</div>
+  </div>
+
+  <div id="hud-right">
+    <div id="clock"><span id="clock-icon">☀️</span><span id="clock-day">第 1 天</span></div>
+    <div id="pos-line"></div>
+    <div id="fps-line"></div>
+    <div id="hint-line">左键破坏 · 右键放置/使用 · F 切换模式 · V 切换视角 · T 合成</div>
+  </div>
+</div>
+
+<!-- ============ 主菜单 ============ -->
+<div id="menu" class="overlay">
+  <div class="panel menu-panel">
+    <h1 class="logo">迷你世界<span class="logo-sub">网 页 版</span></h1>
+    <div id="load-status" class="dim">正在生成世界纹理…</div>
+    <div class="btn-col">
+      <button id="btn-new" class="mbtn" disabled>🌍 新的世界（创造模式）</button>
+      <button id="btn-new-surv" class="mbtn" disabled>🛡️ 新的世界（生存模式）</button>
+      <button id="btn-load" class="mbtn hidden" disabled>📂 继续上次的存档</button>
+      <button id="btn-ctl" class="mbtn small">⌨️ 操作说明</button>
+    </div>
+    <div class="dim tiny">随机种子地形 · 洞穴矿藏 · 昼夜交替 · 无限存档</div>
+  </div>
+</div>
+
+<!-- ============ 暂停 ============ -->
+<div id="pause" class="overlay hidden">
+  <div class="panel menu-panel">
+    <h1 class="logo small">游戏暂停</h1>
+    <div class="btn-col">
+      <button id="btn-resume" class="mbtn">▶ 继续游戏</button>
+      <button id="btn-pmode" class="mbtn">🔄 切换 生存 / 创造</button>
+      <button id="btn-psave" class="mbtn">💾 立即保存</button>
+      <button id="btn-pmain" class="mbtn danger">🏠 保存并回到主菜单</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 死亡 ============ -->
+<div id="death" class="overlay hidden">
+  <div class="panel menu-panel">
+    <h1 class="logo red">你死了！</h1>
+    <div class="btn-col">
+      <button id="btn-respawn" class="mbtn">🔁 重生</button>
+      <button id="btn-dmain" class="mbtn">🏠 回到主菜单</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 合成 ============ -->
+<div id="crafting" class="overlay hidden">
+  <div class="panel">
+    <h2>🛠️ 合成与制作</h2>
+    <div class="tabs">
+      <button class="tab on" data-tab="craft">合成台</button>
+      <button class="tab" data-tab="cook">熔炼</button>
+    </div>
+
+    <div id="tab-craft" class="tabpage">
+      <div id="recipes"></div>
+      <div class="note">左键点击背包中的物品可放入 / 取回；数量可用鼠标滚轮或右键 ±1 调整。</div>
+      <div class="craft-row">
+        <div class="bag-title">背包</div>
+        <div id="craft-bag" class="slots"></div>
+      </div>
+    </div>
+
+    <div id="tab-cook" class="tabpage hidden">
+      <div class="cook-row">
+        <div class="cook-col">
+          <div class="slot-label">原料</div>
+          <div class="slots"><div class="slot big" id="smelt-input"><div class="it"></div><div class="cnt"></div></div></div>
+        </div>
+        <div class="cook-arrow">🔥 ➜</div>
+        <div class="cook-col">
+          <div class="slot-label">产物</div>
+          <div class="slots"><div class="slot big" id="smelt-out"><div class="it"></div><div class="cnt"></div></div></div>
+        </div>
+      </div>
+      <div id="smelt-status" class="note">熔炼 1 个物品消耗 1 块煤炭，自动进行。</div>
+      <div class="note">产物会先暂存在这里，点击取走。</div>
+    </div>
+
+    <button id="btn-close-craft" class="mbtn small">关闭（Esc）</button>
+  </div>
+</div>
+
+<!-- ============ 操作说明 ============ -->
+<div id="controls" class="overlay hidden">
+  <div class="panel">
+    <h2>⌨️ 操作说明</h2>
+    <table class="ctl">
+      <tr><td>W A S D</td><td>移动</td><td>空格</td><td>跳跃 / 游泳</td></tr>
+      <tr><td>鼠标左键</td><td>破坏方块（创造秒拆）</td><td>鼠标右键</td><td>放置方块 / 交互</td></tr>
+      <tr><td>1 - 9</td><td>选择快捷栏</td><td>滚轮</td><td>切换快捷栏 / 调整数量</td></tr>
+      <tr><td>E / B</td><td>打开背包（创造取物）</td><td>T</td><td>合成与熔炼</td></tr>
+      <tr><td>F</td><td>切换 生存 / 创造</td><td>V</td><td>切换视角（第一/第三人称）</td></tr>
+      <tr><td>Shift</td><td>疾跑</td><td>右键长按</td><td>吃食物（苹果）</td></tr>
+      <tr><td>Esc</td><td>暂停 / 关闭界面</td><td>双击 W</td><td>疾跑</td></tr>
+    </table>
+    <div class="note">
+      生存模式：物品需要通过挖掘收集；木头可以徒手合成木板；煤炭 + 原木可以烤制木炭；
+      TNT 用打火石（右键）点燃。夜晚很黑，小心摔落伤害！
+    </div>
+    <button id="btn-close-ctl" class="mbtn small">知道了</button>
+  </div>
+</div>
+
+<script src="js/noise.js"></script>
+<script src="js/blocks.js"></script>
+<script src="js/terrain.js"></script>
+<script src="js/world.js"></script>
+<script src="js/mesher.js"></script>
+<script src="js/player.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/extras.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
