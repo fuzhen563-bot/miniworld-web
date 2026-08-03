@@ -72,7 +72,7 @@
 ### 方式一：直接打开（最简单）
 ```bash
 # 克隆后双击 index.html 即可（file:// 协议可运行）
-git clone [https://github.com/fuzhen563-bot/miniworld-web](https://github.com/fuzhen563-bot/miniworld-web).git
+git clone https://github.com/fuzhen563-bot/miniworld-web.git
 ```
 
 ### 方式二：本地服务器（推荐）
