@@ -19,8 +19,6 @@
 
 ## 📸 游戏截图
 
-> <div align="center"><i>（截图占位：把游戏截图放到 `docs/screenshots/` 目录后替换下方链接）</i></div>
->
 > | 白昼草原 | 黄昏雪山 | 洞穴矿藏 | TNT 爆炸 |
 > |:-:|:-:|:-:|:-:|
 > | `docs/screenshots/day.png` | `docs/screenshots/dusk.png` | `docs/screenshots/cave.png` | `docs/screenshots/tnt.png` |
